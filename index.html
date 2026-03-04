@@ -148,7 +148,8 @@ async function verify(){
     }
 
   },()=>{
-    s.textContent="Location permission denied.";
+    s.textContent="Verification failed. Please refresh the page and try again.         TIP: Use Chrome browser for better experience.";
+    btn.disabled=";
     btn.disabled=false;
   },{enableHighAccuracy:false,timeout:8000,maximumAge:60000});
 }
