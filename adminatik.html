@@ -41,6 +41,15 @@ h1{
   font-family:monospace;
 }
 
+.mapBtn{
+  text-decoration:none;
+  font-size:18px;
+}
+
+.mapBtn:hover{
+  opacity:.7;
+}
+
 .count{
   margin-bottom:15px;
   opacity:.8;
@@ -59,6 +68,7 @@ h1{
 <th>Answer</th>
 <th>Latitude</th>
 <th>Longitude</th>
+<th>Map</th>
 </tr>
 </thead>
 
@@ -104,13 +114,21 @@ onValue(visitorsRef,(snapshot)=>{
 
   entries.forEach(v=>{
 
+    const lat=v.lat;
+    const lng=v.lng;
+
+    const mapsURL=`https://www.google.com/maps?q=${lat},${lng}`;
+
     const row=document.createElement("tr");
 
     row.innerHTML=`
       <td>${v.time_bst_friendly || "-"}</td>
       <td>${v.answer || "-"}</td>
-      <td class="coords">${v.lat}</td>
-      <td class="coords">${v.lng}</td>
+      <td class="coords">${lat}</td>
+      <td class="coords">${lng}</td>
+      <td>
+        <a class="mapBtn" href="${mapsURL}" target="_blank">📍</a>
+      </td>
     `;
 
     table.appendChild(row);
