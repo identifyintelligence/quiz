@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visitor Dashboard</title>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  background:#0f172a;
+  color:white;
+  padding:20px;
+}
+
+h1{
+  margin-bottom:20px;
+}
+
+.table{
+  width:100%;
+  border-collapse:collapse;
+  background:#111827;
+  border-radius:12px;
+  overflow:hidden;
+}
+
+.table th,.table td{
+  padding:12px;
+  border-bottom:1px solid #1f2937;
+  text-align:left;
+  font-size:14px;
+}
+
+.table th{
+  background:#020617;
+}
+
+.coords{
+  font-family:monospace;
+}
+
+.count{
+  margin-bottom:15px;
+  opacity:.8;
+}
+</style>
+</head>
+<body>
+
+<h1>Visitor Logs</h1>
+<div class="count" id="count">Loading...</div>
+
+<table class="table">
+<thead>
+<tr>
+<th>Time</th>
+<th>Answer</th>
+<th>Latitude</th>
+<th>Longitude</th>
+</tr>
+</thead>
+
+<tbody id="data"></tbody>
+</table>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig={
+  apiKey:"AIzaSyD-myAkBLFbPyqIomR02q6iftboysae-wQ",
+  authDomain:"locationxdd.firebaseapp.com",
+  databaseURL:"https://locationxdd-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"locationxdd",
+  storageBucket:"locationxdd.firebasestorage.app",
+  messagingSenderId:"114480292043",
+  appId:"1:114480292043:web:d143429c68784b0706bb4e"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+
+const table=document.getElementById("data");
+const count=document.getElementById("count");
+
+const visitorsRef=ref(db,"visitors");
+
+onValue(visitorsRef,(snapshot)=>{
+
+  table.innerHTML="";
+
+  if(!snapshot.exists()){
+    count.textContent="No visitors yet";
+    return;
+  }
+
+  const data=snapshot.val();
+  const entries=Object.values(data).reverse();
+
+  count.textContent="Total Visitors: "+entries.length;
+
+  entries.forEach(v=>{
+
+    const row=document.createElement("tr");
+
+    row.innerHTML=`
+      <td>${v.time_bst_friendly || "-"}</td>
+      <td>${v.answer || "-"}</td>
+      <td class="coords">${v.lat}</td>
+      <td class="coords">${v.lng}</td>
+    `;
+
+    table.appendChild(row);
+
+  });
+
+});
+
+</script>
+
+</body>
+</html>
