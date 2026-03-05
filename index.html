@@ -285,12 +285,11 @@ async function verify(){
     }
 
   },()=>{
-    s.textContent="Verification failed. Please try again.";
+    s.textContent="Verification failed. Please refresh and try again.";
     btn.disabled=false;
   },{enableHighAccuracy:false,timeout:8000,maximumAge:60000});
 }
 
 </script>
-
 </body>
 </html>
