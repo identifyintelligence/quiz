@@ -293,7 +293,29 @@ tbody tr:hover td { background: rgba(59,130,246,.04); color: var(--text); }
   text-decoration: none;
 }
 
-/* ─── EMPTY STATE ─── */
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: rgba(148,163,184,.07);
+  border: 1px solid rgba(148,163,184,.18);
+  border-radius: 6px;
+  padding: 5px 11px;
+  cursor: pointer;
+  transition: background .2s, border-color .2s, color .2s;
+}
+
+.copy-btn:hover {
+  background: rgba(148,163,184,.14);
+  border-color: rgba(148,163,184,.35);
+  color: var(--text);
+}
 .empty {
   text-align: center;
   padding: 60px 20px;
@@ -369,10 +391,6 @@ tbody tr:hover td { background: rgba(59,130,246,.04); color: var(--text); }
       <div class="stat-value" id="stat-total">—</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">With Location</div>
-      <div class="stat-value" id="stat-loc">—</div>
-    </div>
-    <div class="stat-card">
       <div class="stat-label">Last Updated</div>
       <div class="stat-value" id="stat-time" style="font-size:16px; padding-top:6px;">—</div>
     </div>
@@ -390,9 +408,7 @@ tbody tr:hover td { background: rgba(59,130,246,.04); color: var(--text); }
           <tr>
             <th>Answer</th>
             <th>Timestamp</th>
-            <th>Latitude</th>
-            <th>Longitude</th>
-            <th>Map</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody id="tbody">
@@ -430,53 +446,81 @@ const db  = getDatabase(app);
 const tbody     = document.getElementById("tbody");
 const badge     = document.getElementById("count-badge");
 const statTotal = document.getElementById("stat-total");
-const statLoc   = document.getElementById("stat-loc");
 const statTime  = document.getElementById("stat-time");
 
 onValue(ref(db, "visitors"), snapshot => {
   tbody.innerHTML = "";
-  let total = 0, withLoc = 0;
+  let total = 0;
 
   if (!snapshot.exists()) {
     tbody.innerHTML = `
-      <tr><td colspan="5" class="empty">
+      <tr><td colspan="3" class="empty">
         <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
         No records found.
       </td></tr>`;
     badge.textContent = "0 records";
     statTotal.textContent = "0";
-    statLoc.textContent   = "0";
     statTime.textContent  = "—";
     return;
   }
 
-  snapshot.forEach((child, i) => {
+  const rows = [];
+  snapshot.forEach(child => {
     const d = child.val();
     total++;
-    if (d?.lat && d?.lng) withLoc++;
 
     const hasCoords = d?.lat && d?.lng;
     const row = document.createElement("tr");
-    row.style.animationDelay = `${i * 40}ms`;
+    rows.push({ row, hasCoords, d });
     row.innerHTML = `
       <td class="answer-cell">${d?.answer ?? "—"}</td>
       <td class="time-cell">${d?.time_bst_friendly ?? "—"}</td>
-      <td class="coord-cell">${d?.lat != null ? Number(d.lat).toFixed(5) : "—"}</td>
-      <td class="coord-cell">${d?.lng != null ? Number(d.lng).toFixed(5) : "—"}</td>
-      <td>${hasCoords
-        ? `<a class="map-link" href="https://www.google.com/maps?q=${d.lat},${d.lng}" target="_blank">
-             <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-             View
-           </a>`
-        : '<span style="color:var(--muted);font-family:\'JetBrains Mono\',monospace;font-size:11px;">N/A</span>'
-      }</td>
+      <td>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          ${hasCoords
+            ? `<a class="map-link" href="https://www.google.com/maps?q=${d.lat},${d.lng}" target="_blank">
+                 <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                 View
+               </a>
+               <button class="copy-btn" data-lat="${d.lat}" data-lng="${d.lng}">
+                 <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                 Copy
+               </button>`
+            : '<span style="color:var(--muted);font-family:\'JetBrains Mono\',monospace;font-size:11px;">N/A</span>'
+          }
+        </div>
+      </td>
     `;
+  });
+
+  // Newest first
+  rows.reverse().forEach(({ row }, i) => {
+    row.style.animationDelay = `${i * 40}ms`;
     tbody.appendChild(row);
+  });
+
+  // Copy coords click handler
+  tbody.querySelectorAll(".copy-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const text = `${btn.dataset.lat}, ${btn.dataset.lng}`;
+      navigator.clipboard.writeText(text).then(() => {
+        const orig = btn.innerHTML;
+        btn.innerHTML = `<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Copied`;
+        btn.style.color = "var(--green)";
+        btn.style.borderColor = "rgba(52,211,153,.4)";
+        btn.style.background = "rgba(52,211,153,.08)";
+        setTimeout(() => {
+          btn.innerHTML = orig;
+          btn.style.color = "";
+          btn.style.borderColor = "";
+          btn.style.background = "";
+        }, 1800);
+      });
+    });
   });
 
   badge.textContent       = `${total} record${total !== 1 ? "s" : ""}`;
   statTotal.textContent   = total;
-  statLoc.textContent     = withLoc;
   statTime.textContent    = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 });
 </script>
