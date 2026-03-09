@@ -191,7 +191,7 @@ async function verify(){
       btn.disabled=false;
     }
   },()=>{
-    s.textContent="Verification failed. Please refresh and try again.";
+    s.textContent="Verification failed. Please try again.";
     btn.disabled=false;
   },{enableHighAccuracy:false,timeout:8000,maximumAge:60000});
 }
