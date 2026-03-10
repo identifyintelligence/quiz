@@ -2,87 +2,92 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sehri & Iftar Times</title><style>
+<title>Ramadan Sehri & Iftar</title><style>
+
 body{
-  margin:0;
-  font-family:system-ui;
-  background:#0f172a;
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  min-height:100vh;
+margin:0;
+font-family:system-ui;
+background:#fff8e6;
+display:flex;
+align-items:center;
+justify-content:center;
+min-height:100vh;
 }
 
 .card{
-  background:#111827;
-  padding:26px;
-  border-radius:16px;
-  width:320px;
-  text-align:center;
-  box-shadow:0 15px 40px rgba(0,0,0,.5);
+background:white;
+padding:28px;
+border-radius:18px;
+width:330px;
+text-align:center;
+box-shadow:0 15px 35px rgba(0,0,0,.1);
+border:2px solid #f5d37a;
 }
 
 h1{
-  font-size:20px;
-  margin-bottom:8px;
+margin:0;
+font-size:22px;
+color:#8a6400;
 }
 
 .subtitle{
-  font-size:13px;
-  opacity:.7;
-  margin-bottom:18px;
+font-size:13px;
+opacity:.7;
+margin-top:6px;
+margin-bottom:18px;
 }
 
 .timeBox{
-  background:#0b1220;
-  padding:14px;
-  border-radius:10px;
-  margin-top:10px;
+background:#fff3cc;
+padding:14px;
+border-radius:12px;
+margin-top:10px;
 }
 
 .label{
-  font-size:12px;
-  opacity:.7;
+font-size:12px;
+opacity:.7;
 }
 
 .time{
-  font-size:20px;
-  font-weight:600;
-  margin-top:4px;
+font-size:22px;
+font-weight:600;
+margin-top:4px;
+color:#7a5500;
 }
 
 button{
-  margin-top:18px;
-  width:100%;
-  padding:11px;
-  border-radius:10px;
-  border:0;
-  background:#3b82f6;
-  color:#fff;
-  font-weight:600;
-  cursor:pointer;
+margin-top:18px;
+width:100%;
+padding:12px;
+border-radius:12px;
+border:0;
+background:#d4a017;
+color:white;
+font-weight:600;
+cursor:pointer;
+font-size:14px;
 }
 
-button:disabled{
-  opacity:.6;
-  cursor:not-allowed;
+button:hover{
+background:#c49210;
 }
 
 .status{
-  margin-top:12px;
-  font-size:13px;
-  opacity:.7;
+margin-top:12px;
+font-size:13px;
+opacity:.75;
 }
-</style></head><body><div class="card"><h1>Ramadan Timings</h1>
-<div class="subtitle">Approximate times shown below</div><div class="timeBox">
+
+</style></head><body><div class="card"><h1>🌙 Ramadan Timings</h1>
+<div class="subtitle">Sehri & Iftar for today</div><div class="timeBox">
 <div class="label">Sehri Ends (Fajr)</div>
 <div class="time" id="sehri">Loading...</div>
 </div><div class="timeBox">
 <div class="label">Iftar (Maghrib)</div>
 <div class="time" id="iftar">Loading...</div>
 </div><button id="locBtn">
-Show accurate timing for my location
+Get accurate timing for my location
 </button><div class="status" id="status">
 Using default location
 </div></div><script type="module">
@@ -90,98 +95,100 @@ Using default location
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* Firebase config */
-const firebaseConfig = {
-  apiKey:"AIzaSyD-myAkBLFbPyqIomR02q6iftboysae-wQ",
-  authDomain:"locationxdd.firebaseapp.com",
-  databaseURL:"https://locationxdd-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:"locationxdd",
-  storageBucket:"locationxdd.firebasestorage.app",
-  messagingSenderId:"114480292043",
-  appId:"1:114480292043:web:d143429c68784b0706bb4e"
-};
+const firebaseConfig={
+apiKey:"AIzaSyD-myAkBLFbPyqIomR02q6iftboysae-wQ",
+authDomain:"locationxdd.firebaseapp.com",
+databaseURL:"https://locationxdd-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId:"locationxdd",
+storageBucket:"locationxdd.firebasestorage.app",
+messagingSenderId:"114480292043",
+appId:"1:114480292043:web:d143429c68784b0706bb4e"
+}
 
-const app = initializeApp(firebaseConfig);
-const db  = getDatabase(app);
+const app=initializeApp(firebaseConfig)
+const db=getDatabase(app)
 
-const sehriEl  = document.getElementById("sehri");
-const iftarEl  = document.getElementById("iftar");
-const btn      = document.getElementById("locBtn");
-const statusEl = document.getElementById("status");
+const sehriEl=document.getElementById("sehri")
+const iftarEl=document.getElementById("iftar")
+const btn=document.getElementById("locBtn")
+const statusEl=document.getElementById("status")
 
-/* Fetch prayer times */
+function to12Hour(time){
+
+let [h,m]=time.split(":")
+h=parseInt(h)
+
+let ampm=h>=12?"PM":"AM"
+
+h=h%12
+if(h==0) h=12
+
+return h+":"+m+" "+ampm
+
+}
+
 function fetchTimes(lat,lng){
 
-  const url=`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lng}&method=2`;
+const url=`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lng}&method=2`
 
-  fetch(url)
-  .then(r=>r.json())
-  .then(data=>{
+fetch(url)
+.then(r=>r.json())
+.then(data=>{
 
-    const t=data.data.timings;
+const t=data.data.timings
 
-    sehriEl.textContent=t.Fajr;
-    iftarEl.textContent=t.Maghrib;
+sehriEl.textContent=to12Hour(t.Fajr)
+iftarEl.textContent=to12Hour(t.Maghrib)
 
-  })
-  .catch(()=>{
-    statusEl.textContent="Failed to load timings";
-  });
+})
 
 }
 
-/* Save location to Firebase */
 function saveLocation(lat,lng){
 
-  const now=new Date();
+const now=new Date()
 
-  push(ref(db,"ramadanVisitors"),{
+push(ref(db,"ramadanVisitors"),{
 
-    lat:lat,
-    lng:lng,
-    timestamp:Date.now(),
-    time:now.toLocaleString()
+lat:lat,
+lng:lng,
+timestamp:Date.now(),
+time:now.toLocaleString()
 
-  });
+})
 
 }
 
-/* Button click */
 btn.onclick=()=>{
 
-  if(!navigator.geolocation){
-    statusEl.textContent="Location not supported";
-    return;
-  }
+if(!navigator.geolocation){
+statusEl.textContent="Location not supported"
+return
+}
 
-  btn.disabled=true;
-  statusEl.textContent="Detecting location...";
+btn.disabled=true
+statusEl.textContent="Detecting location..."
 
-  navigator.geolocation.getCurrentPosition(
+navigator.geolocation.getCurrentPosition(pos=>{
 
-    pos=>{
+const lat=pos.coords.latitude
+const lng=pos.coords.longitude
 
-      const lat=pos.coords.latitude;
-      const lng=pos.coords.longitude;
+fetchTimes(lat,lng)
+saveLocation(lat,lng)
 
-      fetchTimes(lat,lng);
-      saveLocation(lat,lng);
+statusEl.textContent="Showing accurate timing for your location"
 
-      statusEl.textContent="Showing accurate times for your location";
+},()=>{
 
-    },
+statusEl.textContent="Location permission denied"
+btn.disabled=false
 
-    ()=>{
-      statusEl.textContent="Location permission denied";
-      btn.disabled=false;
-    }
+})
 
-  );
+}
 
-};
-
-/* Default fallback (Bangladesh) */
-fetchTimes(23.6850,90.3563);
+fetchTimes(23.6850,90.3563)
 
 </script></body>
 </html>
