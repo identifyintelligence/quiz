@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Arzu</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #0f172a;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* Pink Clickable Text Style */
+    .trigger-text {
+      color: #ff69b4;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 15px 30px;
+      border: 2px solid #ff69b4;
+      border-radius: 50px;
+      box-shadow: 0 0 15px rgba(255, 105, 180, 0.4);
+      transition: all 0.3s ease;
+      animation: pulse 2s infinite;
+    }
+
+    .trigger-text:hover {
+      transform: scale(1.05);
+      background-color: rgba(255, 105, 180, 0.15);
+    }
+
+    /* Profile Card (Initially Hidden) */
+    .profile-card {
+      display: none;
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 20px;
+      border: 1px solid #ff69b4;
+      box-shadow: 0 10px 30px rgba(255, 105, 180, 0.2);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    /* Animation Trigger */
+    .profile-card.active {
+      display: block;
+      animation: zoomIn 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+    }
+
+    .profile-card p {
+      font-size: 16px;
+      margin: 12px 0;
+      line-height: 1.6;
+      text-align: left;
+    }
+
+    .profile-card p strong {
+      color: #ff69b4;
+    }
+
+    .footer-text {
+      margin-top: 25px;
+      font-size: 20px;
+      color: #ff69b4;
+      font-weight: bold;
+      border-top: 1px solid rgba(255, 105, 180, 0.3);
+      padding-top: 15px;
+    }
+
+    /* Animations */
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 15px rgba(255, 105, 180, 0.4); }
+      50% { box-shadow: 0 0 25px rgba(255, 105, 180, 0.8); }
+    }
+
+    @keyframes zoomIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.5) translateY(50px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Landing Button -->
+  <div id="btnContainer">
+    <div class="trigger-text" onclick="showProfile()">see about arzu ahmed niloy</div>
+  </div>
+
+  <!-- Details Card -->
+  <div id="profileCard" class="profile-card">
+    <p><strong>Name:</strong> Arzu Ahmed Niloy</p>
+    <p><strong>Gender:</strong> male</p>
+    <p><strong>Location:</strong> Nogardala, Shahzadpur, Sirajganj, Rajshahi</p>
+    <p><strong>Country:</strong> Bangladesh</p>
+    <p><strong>Mobile/WhatsApp number:</strong> +8801767720580</p>
+    
+    <div class="footer-text">only for my Bibi🙃</div>
+  </div>
+
+  <script>
+    function showProfile() {
+      document.getElementById('btnContainer').style.display = 'none';
+      document.getElementById('profileCard').classList.add('active');
+    }
+  </script>
+
+</body>
+</html>
